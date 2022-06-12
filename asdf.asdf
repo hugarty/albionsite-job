@@ -1,0 +1,13 @@
+DB_HOST=jdbc:postgresql://localhost
+DB_PORT=5432
+DB_INSTANCE=albionsite
+DB_USERNAME=postgres
+DB_PASSWORD=123456
+
+spring.batch.job.enabled=false
+
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+spring.jpa.hibernate.ddl-auto=none
+spring.datasource.url=jdbc:postgresql://localhost:5432/albionsite
+spring.datasource.username=postgres
+spring.datasource.password=123456
