@@ -17,7 +17,10 @@ import org.springframework.batch.core.configuration.annotation.EnableBatchProces
 import org.springframework.batch.test.JobLauncherTestUtils;
 import org.springframework.batch.test.context.SpringBatchTest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.ApplicationContextInitializer;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -34,8 +37,10 @@ import org.springframework.web.client.RestTemplate;
 
 import com.hugarty.albionsite.job.config.JobConfig;
 import com.hugarty.albionsite.job.dto.alliance.AllianceDTO;
-
-import com.hugarty.albionsite.job.item.FetchAlliancesAndDetachedGuildsItemProcessor;
+import com.hugarty.albionsite.job.item.stepone.FetchAlliancesAndDetachedGuildsItemProcessor;
+import com.hugarty.albionsite.job.item.stepthree.BuildAlliancesDailyItemProcessor;
+import com.hugarty.albionsite.job.item.steptwo.FetchGuildDailyAndInvalidAllianceItemProcessor;
+import com.hugarty.albionsite.job.rest.RestRetryableProvider;
 
 /* 
  * @SqlGroup
@@ -53,7 +58,11 @@ import com.hugarty.albionsite.job.item.FetchAlliancesAndDetachedGuildsItemProces
 })
 @RunWith(SpringRunner.class)
 @SpringBatchTest
-@ContextConfiguration(classes={JobTests.TestConfig.class, FetchAlliancesAndDetachedGuildsItemProcessor.class })
+@ContextConfiguration(classes={JobTests.TestConfig.class, 
+		FetchAlliancesAndDetachedGuildsItemProcessor.class,
+		FetchGuildDailyAndInvalidAllianceItemProcessor.class,
+		BuildAlliancesDailyItemProcessor.class,
+		RestRetryableProvider.class })
 public class JobTests {
 
 	@Autowired
@@ -95,7 +104,7 @@ public class JobTests {
 		JobExecution launchJob = jobLauncherTestUtils.launchJob();
 		
 		assertEquals(ExitStatus.FAILED.getExitCode(), launchJob.getExitStatus().getExitCode());
-		verify(restTemplate, atLeast(JobConfig.RETRY_NUMBER)).getForEntity(anyString(), any());
+		verify(restTemplate, atLeast(RestRetryableProvider.MAX_ATTEMPTS)).getForEntity(anyString(), any());
 	}
 
 	@Configuration

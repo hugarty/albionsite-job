@@ -2,7 +2,10 @@ package com.hugarty.albionsite.job;
 
 import java.time.LocalDateTime;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.JobParametersInvalidException;
@@ -19,20 +22,22 @@ import org.springframework.context.ConfigurableApplicationContext;
 @EnableBatchProcessing
 public class AlbionJobApplication {
 
+	private static Logger logger = LoggerFactory.getLogger(AlbionJobApplication.class);
 	public static void main(String[] args) {
-		ConfigurableApplicationContext run = SpringApplication.run(AlbionJobApplication.class, args);
-
-		JobLauncher jobLauncher = run.getBean(JobLauncher.class);
-		Job job = run.getBean(Job.class);
+		ConfigurableApplicationContext applicationContext = SpringApplication.run(AlbionJobApplication.class, args);
+		JobLauncher jobLauncher = applicationContext.getBean(JobLauncher.class);
+		Job job = applicationContext.getBean(Job.class);
 
 		JobParameters jobParameters = new JobParametersBuilder()
 				.addString("paramTeste", LocalDateTime.now().toString())
 				.toJobParameters();
 
 		try {
-
-			jobLauncher.run(job, jobParameters);
-
+			JobExecution jobExecution = jobLauncher.run(job, jobParameters);
+			logger.info("Job Start Time: {}", jobExecution.getStartTime());
+			logger.info("Job End Time: {}", jobExecution.getEndTime());
+			logger.info("Time execution Millis: {}", jobExecution.getEndTime().getTime() - jobExecution.getStartTime().getTime());
+			System.exit(SpringApplication.exit(applicationContext));
 		} catch (JobExecutionAlreadyRunningException 
 				| JobRestartException 
 				| JobInstanceAlreadyCompleteException

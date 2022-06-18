@@ -6,6 +6,19 @@ import com.hugarty.albionsite.job.dto.guild.GuildRestResultWrapperDTO;
 
 public class GuildDaily {
 
+  private Long id;
+  private LocalDate date;
+  private Long guildId;
+  private Long fame;
+  private Long killFame;
+  private Long deathFame;
+  private Long gvgKills;
+  private Long gvgDeaths;
+  private Long kills;
+  private Long deaths;
+  private String ratio;
+  private Integer memberCount;
+
   public GuildDaily(Guild guild, GuildRestResultWrapperDTO dto) {
     this.date = LocalDate.now();
     this.guildId = guild.getId();
@@ -22,19 +35,6 @@ public class GuildDaily {
 
     this.memberCount = dto.basic.memberCount;
   }
-
-  private Long id;
-  private LocalDate date;
-  private Long guildId;
-  private Long fame;
-  private Long killFame;
-  private Long deathFame;
-  private Long gvgKills;
-  private Long gvgDeaths;
-  private Long kills;
-  private Long deaths;
-  private String ratio;
-  private Integer memberCount;
 
   public Long getId() {
     return id;
