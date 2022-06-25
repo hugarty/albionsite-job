@@ -7,3 +7,5 @@ Get data about:
 - Guilds
 - Alliances
 
+
+To work you need to connect to a sql database, there is h2 and postgres migrations on src/main/resources and test/resources.
