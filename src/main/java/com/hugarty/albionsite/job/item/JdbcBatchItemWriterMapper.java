@@ -7,8 +7,11 @@ import javax.sql.DataSource;
 
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.database.JdbcBatchItemWriter;
-import org.springframework.batch.item.database.builder.JdbcBatchItemWriterBuilder;
 
+/**
+ * This class exist to MAP an object A to an object B 
+ * and create a {@link JdbcBatchItemWriter} beanMapped to object B.
+ */
 public class JdbcBatchItemWriterMapper<T, U> implements ItemWriter<T> {
 
   private JdbcBatchItemWriter<U> jdbcBatchItemWriter;
@@ -16,13 +19,7 @@ public class JdbcBatchItemWriterMapper<T, U> implements ItemWriter<T> {
 
   public JdbcBatchItemWriterMapper(DataSource dataSource, String sql, Function<List<? extends T>, List<? extends U>> mapper) {
     this.mapper = mapper;
-    this.jdbcBatchItemWriter = new JdbcBatchItemWriterBuilder<U>()
-      .beanMapped()
-      .dataSource(dataSource)
-      .sql(sql)
-      .build();
-    
-    jdbcBatchItemWriter.afterPropertiesSet(); // WE NEED TO CALL THIS TO USE BeanMapped instead CollumnMapped
+    this.jdbcBatchItemWriter = JdbcBatchItemWritterBeanMappedProvider.<U>get(dataSource, sql);
   }
 
   @Override

@@ -2,6 +2,7 @@ package com.hugarty.albionsite.job.rest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.retry.RetryCallback;
@@ -20,14 +21,19 @@ public class RestRetryableProvider {
   private static final String URL_KEY = "URL";
 	private static Logger logger = LoggerFactory.getLogger(RestRetryableProvider.class);
   
-  public static final Integer MAX_ATTEMPTS = 20;
-  private static final Integer DELAY_MILLIS = 5;
+  // todo - Testar isso, LEMBRAR de adicionar no HEROKU
+  
+  private final Integer MAX_ATTEMPTS;
+  private final Integer DELAY_MILLIS;
   private final RetryTemplate retryTemplate;
-
   private final RestTemplate restTemplate;
 
-  public RestRetryableProvider(RestTemplate restTemplate) {
+  public RestRetryableProvider(RestTemplate restTemplate, 
+      @Value("${albion.job.max.attempts}") Integer MAX_ATTEMPTS,
+      @Value("${albion.job.delay.millis}") Integer DELAY_MILLIS) {
     this.restTemplate = restTemplate;
+    this.MAX_ATTEMPTS = MAX_ATTEMPTS;
+    this.DELAY_MILLIS = DELAY_MILLIS;
     this.retryTemplate = getRetryTemplate();
   }
 
@@ -52,7 +58,7 @@ public class RestRetryableProvider {
       ResponseEntity<R> forEntity = restTemplate.getForEntity(url, clazz);
 
       if (!HttpStatus.OK.equals(forEntity.getStatusCode())) {
-        String message = String.format("Fail to recover Alliance information: %s", forEntity.toString());
+        String message = String.format("Fail to recover information: %s", forEntity.toString());
         throw new RestClientException(message);
       }
       return forEntity.getBody();

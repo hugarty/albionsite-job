@@ -26,10 +26,10 @@ public class AlbionJobApplication {
 	public static void main(String[] args) {
 		ConfigurableApplicationContext applicationContext = SpringApplication.run(AlbionJobApplication.class, args);
 		JobLauncher jobLauncher = applicationContext.getBean(JobLauncher.class);
-		Job job = applicationContext.getBean(Job.class);
+		Job job = applicationContext.getBean("cleanDailyJob", Job.class);
 
 		JobParameters jobParameters = new JobParametersBuilder()
-				.addString("paramTeste", LocalDateTime.now().toString())
+				.addString("localdatetime", LocalDateTime.now().toString()) // TODO COLOCAR APENAS DIA e HORA
 				.toJobParameters();
 
 		try {

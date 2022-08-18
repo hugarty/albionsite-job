@@ -22,7 +22,7 @@ public class GuildDailyCompositeItemWriterProvider {
         .delegates(
             insertInvalidAllianceItemWriter(dataSource),
             insertGuildDailyItemWriter(dataSource),
-            updateGuildAlliance(dataSource))
+            updateGuildAllianceRelationship(dataSource))
         .build();
   }
 
@@ -51,7 +51,7 @@ public class GuildDailyCompositeItemWriterProvider {
         .build();
   }
 
-  private ItemWriter<WrapperInvalidAllianceGuildDaily> updateGuildAlliance(DataSource dataSource) {
+  private ItemWriter<WrapperInvalidAllianceGuildDaily> updateGuildAllianceRelationship(DataSource dataSource) {
     return new JdbcBatchItemWriterMapper.Builder<WrapperInvalidAllianceGuildDaily, Guild>()
         .dataSource(dataSource)
         .mapper(items -> items.stream()

@@ -1,15 +1,14 @@
 package com.hugarty.albionsite.job.item.stepthree;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.batch.item.ItemProcessor;
-import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Component;
 
+import com.hugarty.albionsite.job.item.ResultSetExtractorProvider;
 import com.hugarty.albionsite.job.model.Alliance;
 import com.hugarty.albionsite.job.model.AllianceDaily;
 
@@ -38,7 +37,7 @@ public class BuildAlliancesDailyItemProcessor implements ItemProcessor<Alliance,
     return namedParameterJdbcTemplate.query( 
         "SELECT id FROM guild WHERE alliance_albion_id = :alliance_albion_id",
         new MapSqlParameterSource("alliance_albion_id", albionId),
-        resultSetExtractorProvider(Long.class));
+        ResultSetExtractorProvider.getOneColumn(Long.class));
   }
 
   private List<Integer> getTodaysMembersCountFromGuildDaily(List<Long> guildsId, LocalDate localDateNow) {
@@ -47,17 +46,8 @@ public class BuildAlliancesDailyItemProcessor implements ItemProcessor<Alliance,
     return namedParameterJdbcTemplate.query( 
         "SELECT membercount FROM guild_daily WHERE date = :date AND guild_id IN (:ids)",
         parameters,
-        resultSetExtractorProvider(Integer.class));
+        ResultSetExtractorProvider.getOneColumn(Integer.class));
   }
 
-  private <T> ResultSetExtractor<List<T>>  resultSetExtractorProvider (Class<T> clazz) {
-    return (ResultSetExtractor<List<T>>) rs -> {
-      List<T> list = new ArrayList<>();
-      while(rs.next()){
-        list.add(rs.getObject(1, clazz));
-      }
-      return list;
-    };
-  }
 }
 
