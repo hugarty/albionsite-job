@@ -4,19 +4,19 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.batch.core.configuration.annotation.StepScope;
-import org.springframework.batch.item.ItemProcessor;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import com.hugarty.albionsite.job.item.ResultSetExtractorProvider;
 import com.hugarty.albionsite.job.item.cleanstep.HerokuLimitsConstants;
+import com.hugarty.albionsite.job.item.cleanstep.TemplateMethodRemovalItemProcessor;
 import com.hugarty.albionsite.job.model.clean.WrapperAllianceRemoval;
 
 @Component
 @StepScope // StepScope is needed because this item processor needs localDate.now() 
-public class AllianceRemovalItemProcessor implements ItemProcessor<Long, WrapperAllianceRemoval> {
-  
+public class AllianceRemovalItemProcessor extends TemplateMethodRemovalItemProcessor<WrapperAllianceRemoval> {
+
   private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
   public AllianceRemovalItemProcessor (NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
@@ -24,23 +24,18 @@ public class AllianceRemovalItemProcessor implements ItemProcessor<Long, Wrapper
   }
 
   @Override
-  public WrapperAllianceRemoval process(Long amountOfLines) throws Exception {
-    if (amountOfLines == null) {
-      return null;
-    }
-    if (HerokuLimitsConstants.ALLIANCE.getLimit() >= amountOfLines) {
-      return null;
-    }
+  protected HerokuLimitsConstants geHerokuLimitsConstants() {
+    return HerokuLimitsConstants.ALLIANCE;
+  }
 
-    long amountToDelete = (amountOfLines - HerokuLimitsConstants.ALLIANCE.getLimit());
+  @Override
+  protected WrapperAllianceRemoval buildWrapperRemoval(long amountToDelete) {
     WrapperAllianceRemoval wrapper = new WrapperAllianceRemoval();
     wrapper.setIdsAlliances(getIdsAlliancesWillBeDeleted(amountToDelete));
-
     wrapper.setIdsAlliancesDaily(getAllIdsAlliancesDailyToDelete(wrapper.getIdsAlliances()));
     wrapper.setIdsAlliancesWeekly(getIdsAllAlliancesWeeklyToDelete(wrapper.getIdsAlliances()));
     wrapper.setIdsGuilds(getIdsGuildsToDelete(wrapper.getIdsAlliances()));
     wrapper.setIdsGuildsDaily(getIdsGuildsDailyToDelete(wrapper.getIdsGuilds()));
-    
     return wrapper;
   }
 

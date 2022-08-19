@@ -14,19 +14,25 @@ import com.hugarty.albionsite.job.model.Guild;
 import com.hugarty.albionsite.job.model.GuildDaily;
 import com.hugarty.albionsite.job.model.WrapperInvalidAllianceGuildDaily;
 
-
 public class GuildDailyCompositeItemWriterProvider {
-  
-  public CompositeItemWriter<WrapperInvalidAllianceGuildDaily> get(DataSource dataSource) {
+
+  private DataSource dataSource;
+
+  public GuildDailyCompositeItemWriterProvider(DataSource dataSource) {
+    this.dataSource = dataSource;
+  }
+
+  public CompositeItemWriter<WrapperInvalidAllianceGuildDaily> get() {
+
     return new CompositeItemWriterBuilder<WrapperInvalidAllianceGuildDaily>()
         .delegates(
-            insertInvalidAllianceItemWriter(dataSource),
-            insertGuildDailyItemWriter(dataSource),
-            updateGuildAllianceRelationship(dataSource))
+            insertInvalidAllianceItemWriter(),
+            insertGuildDailyItemWriter(),
+            updateGuildAllianceRelationship())
         .build();
   }
 
-  private ItemWriter<WrapperInvalidAllianceGuildDaily> insertInvalidAllianceItemWriter(DataSource dataSource) {
+  private ItemWriter<WrapperInvalidAllianceGuildDaily> insertInvalidAllianceItemWriter() {
     return new JdbcBatchItemWriterMapper.Builder<WrapperInvalidAllianceGuildDaily, Alliance>()
         .dataSource(dataSource)
         .mapper(items -> items.stream()
@@ -37,7 +43,7 @@ public class GuildDailyCompositeItemWriterProvider {
         .build();
   }
 
-  private ItemWriter<WrapperInvalidAllianceGuildDaily> insertGuildDailyItemWriter(DataSource dataSource) {
+  private ItemWriter<WrapperInvalidAllianceGuildDaily> insertGuildDailyItemWriter() {
     String insert = " INSERT INTO guild_daily (date, guild_id, fame, killfame, deathfame, gvgkills, gvgdeaths, kills, deaths, ratio, membercount) ";
     String values = " VALUES (:date, :guildId, :fame, :killFame, :deathFame, :gvgKills, :gvgDeaths, :kills, :deaths, :ratio, :memberCount)";
     String sql = insert + values;
@@ -51,7 +57,7 @@ public class GuildDailyCompositeItemWriterProvider {
         .build();
   }
 
-  private ItemWriter<WrapperInvalidAllianceGuildDaily> updateGuildAllianceRelationship(DataSource dataSource) {
+  private ItemWriter<WrapperInvalidAllianceGuildDaily> updateGuildAllianceRelationship() {
     return new JdbcBatchItemWriterMapper.Builder<WrapperInvalidAllianceGuildDaily, Guild>()
         .dataSource(dataSource)
         .mapper(items -> items.stream()

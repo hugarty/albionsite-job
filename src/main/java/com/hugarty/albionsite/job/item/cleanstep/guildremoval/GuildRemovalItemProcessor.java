@@ -4,45 +4,38 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.batch.core.configuration.annotation.StepScope;
-import org.springframework.batch.item.ItemProcessor;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import com.hugarty.albionsite.job.item.ResultSetExtractorProvider;
 import com.hugarty.albionsite.job.item.cleanstep.HerokuLimitsConstants;
+import com.hugarty.albionsite.job.item.cleanstep.TemplateMethodRemovalItemProcessor;
 import com.hugarty.albionsite.job.model.clean.WrapperAllianceRemoval;
 
 @Component
 @StepScope // StepScope is needed because this item processor needs localDate.now() 
-public class GuildRemovalItemProcessor implements ItemProcessor<Long, WrapperAllianceRemoval> {
-  
+public class GuildRemovalItemProcessor extends TemplateMethodRemovalItemProcessor<WrapperAllianceRemoval> {
+
   private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
   public GuildRemovalItemProcessor (NamedParameterJdbcTemplate namedParameterJdbcTemplate) {
     this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
   }
 
-  // TODO testar isso aqui 
+  @Override
+  protected HerokuLimitsConstants geHerokuLimitsConstants() {
+    return HerokuLimitsConstants.GUILD;
+  }
 
   @Override
-  public WrapperAllianceRemoval process(Long amountOfLines) throws Exception {
-    if (amountOfLines == null) {
-      return null;
-    }
-    if (HerokuLimitsConstants.GUILD.getLimit() >= amountOfLines) {
-      return null;
-    }
-
-    long amountToDelete = (amountOfLines - HerokuLimitsConstants.GUILD.getLimit());
+  protected WrapperAllianceRemoval buildWrapperRemoval(long amountToDelete) {
     WrapperAllianceRemoval wrapper = new WrapperAllianceRemoval();
     wrapper.setIdsGuilds(getIdsGuildsToDelete(amountToDelete));
     wrapper.setIdsGuildsDaily(getIdsGuildsDailyToDelete(wrapper.getIdsGuilds()));
-    
     return wrapper;
   }
 
-  // TODO esse método está "duplicado"
   private List<Long> getIdsGuildsToDelete (long amountToDelete) {
     String select =   " SELECT guild_id FROM guild_daily " ;
     String where =    " WHERE date = :date_now ";
@@ -59,7 +52,6 @@ public class GuildRemovalItemProcessor implements ItemProcessor<Long, WrapperAll
         ResultSetExtractorProvider.getOneColumn(Long.class));
   }
 
-  // TODO esse método está duplicado
   private List<Long> getIdsGuildsDailyToDelete(List<Long> idsGuilds) {
     String select = " SELECT id FROM guild_daily " ;
     String where = " WHERE guild_id IN (:ids) ";

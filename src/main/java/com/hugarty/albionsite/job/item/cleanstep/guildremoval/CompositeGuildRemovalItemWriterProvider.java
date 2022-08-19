@@ -11,24 +11,27 @@ import com.hugarty.albionsite.job.model.clean.WrapperAllianceRemoval;
 
 public class CompositeGuildRemovalItemWriterProvider {
 
-  public CompositeItemWriter<WrapperAllianceRemoval> get(DataSource dataSource) {
+  private DataSource dataSource;
+
+  public CompositeGuildRemovalItemWriterProvider(DataSource dataSource) {
+    this.dataSource = dataSource;
+  }
+
+  public CompositeItemWriter<WrapperAllianceRemoval> get() {
     return new CompositeItemWriterBuilder<WrapperAllianceRemoval>()
         .delegates(
-          deleteGuildsDaily(dataSource),
-          deleteGuilds(dataSource)
+          deleteGuildsDaily(),
+          deleteGuilds()
         )
         .build();
   }
 
-
-  // TODO esse método está "duplicado"
-  private JdbcBatchItemWriter<WrapperAllianceRemoval> deleteGuildsDaily (DataSource dataSource) {
+  private JdbcBatchItemWriter<WrapperAllianceRemoval> deleteGuildsDaily () {
     String sql = "DELETE FROM guild_daily where id IN (:idsGuildsDaily) ";
     return JdbcBatchItemWritterBeanMappedProvider.<WrapperAllianceRemoval>get(dataSource, sql);
   }
 
-  // TODO esse método está "duplicado"
-  private JdbcBatchItemWriter<WrapperAllianceRemoval> deleteGuilds (DataSource dataSource) {
+  private JdbcBatchItemWriter<WrapperAllianceRemoval> deleteGuilds () {
     String sql = "DELETE FROM guild where id IN (:idsGuilds) ";
     return JdbcBatchItemWritterBeanMappedProvider.<WrapperAllianceRemoval>get(dataSource, sql);
   }

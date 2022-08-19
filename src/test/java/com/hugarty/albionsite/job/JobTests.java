@@ -17,6 +17,7 @@ import org.springframework.batch.core.configuration.annotation.EnableBatchProces
 import org.springframework.batch.test.JobLauncherTestUtils;
 import org.springframework.batch.test.context.SpringBatchTest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.ApplicationContextInitializer;
@@ -65,6 +66,9 @@ import com.hugarty.albionsite.job.rest.RestRetryableProvider;
 		RestRetryableProvider.class })
 public class JobTests {
 
+	@Value("${albion.job.max.attempts}")
+	private Integer MAX_ATTEMPTS;
+
 	@Autowired
 	private JobLauncherTestUtils jobLauncherTestUtils;
 
@@ -104,8 +108,7 @@ public class JobTests {
 		JobExecution launchJob = jobLauncherTestUtils.launchJob();
 		
 		assertEquals(ExitStatus.FAILED.getExitCode(), launchJob.getExitStatus().getExitCode());
-		// todo recuperar esse valor - RestRetryableProvider.MAX_ATTEMPTS
-		//TODO verify(restTemplate, atLeast(RestRetryableProvider.MAX_ATTEMPTS)).getForEntity(anyString(), any());
+		verify(restTemplate, atLeast(MAX_ATTEMPTS)).getForEntity(anyString(), any());
 	}
 
 	@Configuration

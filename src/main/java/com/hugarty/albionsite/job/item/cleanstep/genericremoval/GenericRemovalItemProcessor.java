@@ -2,15 +2,15 @@ package com.hugarty.albionsite.job.item.cleanstep.genericremoval;
 
 import java.util.List;
 
-import org.springframework.batch.item.ItemProcessor;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import com.hugarty.albionsite.job.item.ResultSetExtractorProvider;
 import com.hugarty.albionsite.job.item.cleanstep.HerokuLimitsConstants;
+import com.hugarty.albionsite.job.item.cleanstep.TemplateMethodRemovalItemProcessor;
 import com.hugarty.albionsite.job.model.clean.WrapperGenericRemoval;
 
-public class GenericRemovalItemProcessor implements ItemProcessor<Long, WrapperGenericRemoval> {
+public class GenericRemovalItemProcessor extends TemplateMethodRemovalItemProcessor<WrapperGenericRemoval> {
   
   private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
   private final HerokuLimitsConstants herokuConstants;
@@ -20,17 +20,13 @@ public class GenericRemovalItemProcessor implements ItemProcessor<Long, WrapperG
     this.herokuConstants = herokuConstants;
   }
 
-  // TODO - TESTAR ISSO AQUI
   @Override
-  public WrapperGenericRemoval process(Long amountOfLines) throws Exception {
-    if (amountOfLines == null) {
-      return null;
-    }
-    if (herokuConstants.getLimit() >= amountOfLines) {
-      return null;
-    }
-    long amountToDelete = (amountOfLines - herokuConstants.getLimit());
-    
+  protected HerokuLimitsConstants geHerokuLimitsConstants() {
+    return herokuConstants;
+  }
+
+  @Override
+  protected WrapperGenericRemoval buildWrapperRemoval(long amountToDelete) {
     return new WrapperGenericRemoval(getIdsToDelete(amountToDelete));
   }
 

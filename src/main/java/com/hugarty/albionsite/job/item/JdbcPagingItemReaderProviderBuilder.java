@@ -1,5 +1,7 @@
 package com.hugarty.albionsite.job.item;
 
+import java.security.InvalidParameterException;
+
 import javax.sql.DataSource;
 
 import org.springframework.batch.item.database.JdbcPagingItemReader;
@@ -34,13 +36,20 @@ public class JdbcPagingItemReaderProviderBuilder<T> {
       throw new IllegalStateException(e);
     }
 
-    return new JdbcPagingItemReaderBuilder<T>()
+    JdbcPagingItemReader<T> jdbcPagingItemReader = new JdbcPagingItemReaderBuilder<T>()
         .name(name)
         .dataSource(dataSource)
         .queryProvider(queryProvider)
         .rowMapper(rowMapper)
         .pageSize(pageSize)
         .build();
+
+    try {
+      jdbcPagingItemReader.afterPropertiesSet();
+      return jdbcPagingItemReader;
+    } catch (Exception e) {
+      throw new InvalidParameterException("Was not possible create JdbcPagingItemReader.");
+    }
   }
   
   public JdbcPagingItemReaderProviderBuilder<T> name(String name) {

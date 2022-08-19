@@ -16,15 +16,21 @@ import com.hugarty.albionsite.job.model.WrapperAllianceGuilds;
 
 public class AllianceGuildCompositeItemWriterProvider {
   
-  public CompositeItemWriter<WrapperAllianceGuilds> get(DataSource dataSource) {
+  private DataSource dataSource;
+  
+  public AllianceGuildCompositeItemWriterProvider(DataSource dataSource) {
+    this.dataSource = dataSource;
+  }
+
+  public CompositeItemWriter<WrapperAllianceGuilds> get() {
     return new CompositeItemWriterBuilder<WrapperAllianceGuilds>()
         .delegates(
-            updateAllianceItemWriter(dataSource),
-            insertGuildItemWriter(dataSource))
+            updateAllianceItemWriter(),
+            insertGuildItemWriter())
         .build();
   }
 
-  public ItemWriter<WrapperAllianceGuilds> updateAllianceItemWriter(DataSource dataSource) {
+  public ItemWriter<WrapperAllianceGuilds> updateAllianceItemWriter() {
     return new JdbcBatchItemWriterMapper.Builder<WrapperAllianceGuilds, Alliance>()
         .dataSource(dataSource)
         .mapper(items -> items.stream()
@@ -34,7 +40,7 @@ public class AllianceGuildCompositeItemWriterProvider {
         .build();
   }
 
-  public ItemWriter<WrapperAllianceGuilds> insertGuildItemWriter(DataSource dataSource) {
+  public ItemWriter<WrapperAllianceGuilds> insertGuildItemWriter() {
     return new JdbcBatchItemWriterMapper.Builder<WrapperAllianceGuilds, Guild>()
         .dataSource(dataSource)
         .mapper(items -> items.stream()

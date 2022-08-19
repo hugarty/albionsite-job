@@ -17,27 +17,34 @@ import org.springframework.batch.core.repository.JobRestartException;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 
 @SpringBootApplication(scanBasePackages = {"com.hugarty.albionsite.job"})
 @EnableBatchProcessing
+@EnableScheduling
 public class AlbionJobApplication {
 
 	private static Logger logger = LoggerFactory.getLogger(AlbionJobApplication.class);
-	public static void main(String[] args) {
-		ConfigurableApplicationContext applicationContext = SpringApplication.run(AlbionJobApplication.class, args);
-		JobLauncher jobLauncher = applicationContext.getBean(JobLauncher.class);
-		Job job = applicationContext.getBean("cleanDailyJob", Job.class);
+	static ConfigurableApplicationContext applicationContext;
 
+	public static void main(String[] args) {
+		applicationContext = SpringApplication.run(AlbionJobApplication.class, args);
+	}
+
+	@Scheduled(cron = "0 0 23 * * *")
+	public void launchDailyJob () {
+		JobLauncher jobLauncher = applicationContext.getBean(JobLauncher.class);
+		Job job = applicationContext.getBean("dailyJob", Job.class);
 		JobParameters jobParameters = new JobParametersBuilder()
-				.addString("localdatetime", LocalDateTime.now().toString()) // TODO COLOCAR APENAS DIA e HORA
+				.addString("localdatetime-irrelevant-param", LocalDateTime.now().toString())
 				.toJobParameters();
 
-		try {
+		try {			
 			JobExecution jobExecution = jobLauncher.run(job, jobParameters);
 			logger.info("Job Start Time: {}", jobExecution.getStartTime());
 			logger.info("Job End Time: {}", jobExecution.getEndTime());
 			logger.info("Time execution Millis: {}", jobExecution.getEndTime().getTime() - jobExecution.getStartTime().getTime());
-			System.exit(SpringApplication.exit(applicationContext));
 		} catch (JobExecutionAlreadyRunningException 
 				| JobRestartException 
 				| JobInstanceAlreadyCompleteException
